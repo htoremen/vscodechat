@@ -1,0 +1,292 @@
+{
+  "name": "ollama",
+  "displayName": "Ollama AI Assistant",
+  "description": "AI-powered code completion and assistance using Ollama",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Snippets"
+  ],
+  "keywords": [
+    "ai",
+    "completion",
+    "ollama",
+    "assistant",
+    "code-generation"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "browser": "./dist/browser/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Ollama",
+      "properties": {
+        "ollama.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable Ollama AI assistance. **Note**: Requires Ollama server running locally.",
+          "order": 1
+        },
+        "ollama.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL",
+          "markdownDescription": "The URL where Ollama server is running. Default is `http://localhost:11434`",
+          "order": 2
+        },
+        "ollama.model": {
+          "type": "string",
+          "default": "codellama:7b",
+          "description": "Default model for code completion",
+          "markdownDescription": "The Ollama model to use for code completion. Make sure the model is downloaded via `ollama pull <model>`",
+          "enum": [
+            "codellama:7b",
+            "codellama:13b",
+            "codellama:34b",
+            "deepseek-coder:6.7b",
+            "deepseek-coder:33b",
+            "starcoder:7b",
+            "starcoder:15b",
+            "qwen2:0.5b",
+            "qwen2:1.5b",
+            "qwen2:7b",
+            "llama3:8b",
+            "mistral:7b"
+          ],
+          "enumDescriptions": [
+            "CodeLlama 7B - Fast, good for basic completion",
+            "CodeLlama 13B - Better quality, slower",
+            "CodeLlama 34B - Best quality, requires more resources",
+            "DeepSeek Coder 6.7B - Optimized for coding",
+            "DeepSeek Coder 33B - High quality coding model",
+            "StarCoder 7B - Good for code completion",
+            "StarCoder 15B - Better StarCoder model",
+            "Qwen2 0.5B - Very fast, basic completion",
+            "Qwen2 1.5B - Fast, decent quality",
+            "Qwen2 7B - Good balance of speed and quality",
+            "Llama3 8B - General purpose, good for explanations",
+            "Mistral 7B - Good general purpose model"
+          ],
+          "order": 3
+        },
+        "ollama.temperature": {
+          "type": "number",
+          "default": 0.1,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Temperature for code generation (0 = deterministic, 1 = creative)",
+          "markdownDescription": "Controls randomness in generation. Lower values (0.1-0.3) for code completion, higher (0.7-0.9) for creative tasks.",
+          "order": 4
+        },
+        "ollama.maxTokens": {
+          "type": "number",
+          "default": 100,
+          "minimum": 10,
+          "maximum": 1000,
+          "description": "Maximum number of tokens to generate",
+          "markdownDescription": "Maximum length of generated completions. Higher values allow longer completions but may be slower.",
+          "order": 5
+        },
+        "ollama.enableAutoCompletion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic inline code completion",
+          "markdownDescription": "When enabled, Ollama will provide inline code completions as you type.",
+          "order": 6
+        },
+        "ollama.completionDelay": {
+          "type": "number",
+          "default": 500,
+          "minimum": 100,
+          "maximum": 2000,
+          "description": "Delay in milliseconds before triggering completion",
+          "markdownDescription": "How long to wait after stopping typing before requesting a completion.",
+          "order": 7
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "ollama.testConnection",
+        "title": "Test Connection",
+        "category": "Ollama",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "ollama.explainCode",
+        "title": "Explain Code",
+        "category": "Ollama",
+        "icon": "$(question)"
+      },
+      {
+        "command": "ollama.refactorCode",
+        "title": "Refactor Code",
+        "category": "Ollama",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "ollama.generateTests",
+        "title": "Generate Unit Tests",
+        "category": "Ollama",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "ollama.generateDocumentation",
+        "title": "Generate Documentation",
+        "category": "Ollama",
+        "icon": "$(book)"
+      },
+      {
+        "command": "ollama.optimizeCode",
+        "title": "Optimize Code",
+        "category": "Ollama",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "ollama.translateCode",
+        "title": "Translate Code to Another Language",
+        "category": "Ollama",
+        "icon": "$(globe)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "config.ollama.enabled && editorTextFocus",
+          "submenu": "ollama.editorContext",
+          "group": "1_modification@10"
+        }
+      ],
+      "ollama.editorContext": [
+        {
+          "command": "ollama.explainCode",
+          "when": "editorHasSelection",
+          "group": "analyze@1"
+        },
+        {
+          "command": "ollama.refactorCode",
+          "when": "editorHasSelection",
+          "group": "improve@1"
+        },
+        {
+          "command": "ollama.optimizeCode",
+          "when": "editorHasSelection",
+          "group": "improve@2"
+        },
+        {
+          "command": "ollama.generateTests",
+          "when": "editorHasSelection",
+          "group": "generate@1"
+        },
+        {
+          "command": "ollama.generateDocumentation",
+          "when": "editorHasSelection",
+          "group": "generate@2"
+        },
+        {
+          "command": "ollama.translateCode",
+          "when": "editorHasSelection",
+          "group": "generate@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ollama.testConnection",
+          "when": "config.ollama.enabled"
+        },
+        {
+          "command": "ollama.explainCode",
+          "when": "config.ollama.enabled && editorIsOpen"
+        },
+        {
+          "command": "ollama.refactorCode",
+          "when": "config.ollama.enabled && editorIsOpen"
+        },
+        {
+          "command": "ollama.generateTests",
+          "when": "config.ollama.enabled && editorIsOpen"
+        },
+        {
+          "command": "ollama.generateDocumentation",
+          "when": "config.ollama.enabled && editorIsOpen"
+        },
+        {
+          "command": "ollama.optimizeCode",
+          "when": "config.ollama.enabled && editorIsOpen"
+        },
+        {
+          "command": "ollama.translateCode",
+          "when": "config.ollama.enabled && editorIsOpen"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "ollama.editorContext",
+        "label": "Ollama AI",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ollama.explainCode",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "config.ollama.enabled && editorTextFocus"
+      },
+      {
+        "command": "ollama.refactorCode",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "config.ollama.enabled && editorTextFocus"
+      },
+      {
+        "command": "ollama.generateTests",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "config.ollama.enabled && editorTextFocus"
+      }
+    ],
+    "languages": [
+      {
+        "id": "ollama-output",
+        "aliases": [
+          "Ollama Output"
+        ],
+        "extensions": [
+          ".ollama"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "gulp compile-extension:ollama",
+    "watch": "gulp watch-extension:ollama",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {
+    "@types/node-fetch": "^2.6.12",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.80.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/microsoft/vscode/issues"
+  },
+  "homepage": "https://github.com/microsoft/vscode"
+}
